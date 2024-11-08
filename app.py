@@ -6,17 +6,18 @@ app = Flask(__name__)
 apikey = "a700c8ac"
 
 def searchfilms(search_text):
-    url = f"https://www.omdbapi.com/?s={search_text}&apikey={apikey}"
+    url = "https://www.omdbapi.com/?s=" + search_text + "&apikey=" + apikey
     response = requests.get(url)
     if response.status_code == 200:
         data = response.json()
+        # Cuando pongo ["Search"] falla ;b
         return data.get("Search", [])
     else:
         print("Failed to retrieve search results.")
         return None
 
-def getmoviedetails(movie_id):
-    url = f"https://www.omdbapi.com/?i={movie_id}&apikey={apikey}"
+def getmoviedetails(movie):
+    url = "https://www.omdbapi.com/?i=" + movie["imdbID"] + "&apikey=" + apikey
     response = requests.get(url)
     if response.status_code == 200:
         return response.json()
@@ -31,33 +32,33 @@ def get_country_flag(fullname):
         country_data = response.json()
         if country_data:
             return country_data[0].get("flags", {}).get("svg", None)
-    print(f"Failed to retrieve flag for country: {fullname}")
+    print(f"Failed to retrieve flag for country code: {fullname}")
     return None
 
 def gather_movie_data(movie):
-    details = getmoviedetails(movie)
-    if not details:
+    moviedetails = getmoviedetails(movie)
+    if not moviedetails:
         return None
 
-    countries = details.get("Country", "").split(", ")
+    countriesNames = moviedetails.get("Country", "").split(", ")
     countries_with_flags = [
         {"name": country.strip(), "flag": get_country_flag(country.strip())}
-        for country in countries
+        for country in countriesNames
     ]
 
     return {
-        "title": details.get("Title", "N/A"),
-        "year": details.get("Year", "N/A"),
+        "title": moviedetails["Title"],
+        "year": moviedetails["Year"],
         "countries": countries_with_flags
     }
 
-def merge_data_with_flags(filter_text):
-    movies = searchfilms(filter_text)
-    if not movies:
+def merge_data_with_flags(filter):
+    filmssearch = searchfilms(filter)
+    if not filmssearch:
         return []
 
     with ThreadPoolExecutor() as executor:
-        movies_data = list(executor.map(gather_movie_data, movies))
+        movies_data = list(executor.map(gather_movie_data, filmssearch))
 
     return [movie for movie in movies_data if movie is not None]
 
