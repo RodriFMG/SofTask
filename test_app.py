@@ -11,14 +11,10 @@ class MovieWithFlagAppTestCase(unittest.TestCase):
         app.config['TESTING'] = True
 
     def notest_integration(self):
-
-        # Realiza los testeos para verificar el funcionamiento
         response = self.client.get("/api/movies?filter=superman")
         self.assertEqual(response.status_code, 200)
 
         # The response should be JSON and contain data
-
-        # Verifica que la estructura y los tipos de datos SEAN LOS MISMOS Y LOS QUE SE ESPERAN.
         data = response.get_json()
         self.assertIsInstance(data, list)
         self.assertEqual(len(data), 10)
@@ -27,8 +23,6 @@ class MovieWithFlagAppTestCase(unittest.TestCase):
             self.assertIsNotNone(movie["year"])
             self.assertIsNotNone(movie["countries"])
 
-    # Todos los métodos realizados en el item anterior, se guardan para poder usarlos libreremente.
-    # Se pondrán ahora, lo mismo pero pon el prefijo mock_{method}
     @patch("app.searchfilms")
     @patch("app.getmoviedetails")
     def test_movie_flag_get(self, mock_getmoviedetails, mock_searchfilms):
@@ -54,8 +48,6 @@ class MovieWithFlagAppTestCase(unittest.TestCase):
         data = response.get_json()
         self.assertIsInstance(data, list)
         self.assertEqual(len(data), 1)
-
-        # Compara si cada pelicula y cada dato de esa pelicula, son lo mismo.
         for movie in data:
             self.assertEqual(movie["title"], "Superman II")
             self.assertEqual(movie["year"], "1980")
@@ -72,14 +64,11 @@ class MovieWithFlagAppTestCase(unittest.TestCase):
     @patch("app.get_country_flag")
     @patch("app.getmoviedetails")
     def test_movie_searchapi(self, mock_getmoviedetails, mock_get_country_flag):
-
         mock_getmoviedetails.return_value = {
             "Title": "Superman II",
             "Year": "1980",
             "Country": "United States, United Kingdom, Canada, France",
         }
-
-        # Ahora acá se manda el http del API de la banduras.
         mock_get_country_flag.return_value = "https://flagcdn.com/us.svg"
 
         response = self.client.get("/api/movies?filter=superman")
