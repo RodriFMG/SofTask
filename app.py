@@ -35,7 +35,7 @@ def get_country_flag(fullname):
     return None
 
 def gather_movie_data(movie):
-    details = getmoviedetails(movie["imdbID"])
+    details = getmoviedetails(movie)
     if not details:
         return None
 
